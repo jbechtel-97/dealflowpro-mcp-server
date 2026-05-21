@@ -1,6 +1,7 @@
 {
   "name": "dealflowpro-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "mcpName": "io.github.jbechtel-97/dealflowpro",
   "description": "DealFlowPro MCP Server — Analyze multifamily real estate deals from Claude Code or Claude Desktop",
   "main": "index.js",
   "type": "module",
