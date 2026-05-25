@@ -20,7 +20,7 @@ Ask Claude naturally and it calls the right tool:
 | Tool | Description |
 |------|-------------|
 | `analyze_deal` | Full deal analysis: cap rate, DSCR, cash-on-cash, IRR, DFP Score (0-100), max offer price, yearly cashflows |
-| `score_deal` | Quick screening: DFP Score + verdict + key metrics |
+| `score_deal` | Quick screening: DFP Score + key metrics |
 | `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) |
 | `market_data` | Flood zone, neighborhood income vs state median, job growth for any address |
 
@@ -63,10 +63,7 @@ Just ask Claude about a deal. It automatically picks the right tool.
 ```
 ## Deal Analysis Results
 
-**DFP Score: 19/100 (Poor)** | Verdict: **Closed Leads (Pass)**
-
-### Verdict Reasons
-- Returns Too Low
+**DFP Score: 19/100 (Poor)**
 
 ### Key Metrics
 | Metric | Value |

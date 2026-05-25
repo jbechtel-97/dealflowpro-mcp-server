@@ -67,13 +67,7 @@ function formatAnalysisResult(data) {
   const mo = d.max_offer || {};
 
   let result = `## Deal Analysis Results\n\n`;
-  result += `**DFP Score: ${s.score ?? "N/A"}/100 (${s.band?.label ?? "N/A"})** | Verdict: **${d.verdict}**\n\n`;
-
-  if (d.verdict_reasons?.length) {
-    result += `### Verdict Reasons\n`;
-    d.verdict_reasons.forEach(r => { result += `- ${r}\n`; });
-    result += `\n`;
-  }
+  result += `**DFP Score: ${s.score ?? "N/A"}/100 (${s.band?.label ?? "N/A"})**\n\n`;
 
   result += `### Key Metrics\n`;
   result += `| Metric | Value |\n|--------|-------|\n`;
@@ -111,7 +105,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.1.1",
+  version: "1.2.0",
 });
 
 // Tool: analyze_deal
@@ -155,7 +149,7 @@ server.tool(
 // Tool: score_deal
 server.tool(
   "score_deal",
-  "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score, verdict (Quick Review / Lead Underwriting / Closed Leads (Pass)), and key metrics. Faster than full analysis — use this for quick screening.",
+  "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score and key metrics. Faster than full analysis — use this for quick screening.",
   {
     purchase_price: z.number().describe("Asking/purchase price in dollars"),
     units: z.number().optional().describe("Number of apartment units"),
@@ -180,7 +174,6 @@ server.tool(
     const km = d.key_metrics || {};
 
     let text = `## DFP Score: ${s.score ?? "N/A"}/100 (${s.band?.label ?? "N/A"})\n\n`;
-    text += `**Verdict: ${d.verdict}**\n\n`;
     text += `| Metric | Value |\n|--------|-------|\n`;
     text += `| Cap Rate | ${formatPercent(km.cap_rate)} |\n`;
     text += `| DSCR | ${km.dscr ?? "N/A"} |\n`;

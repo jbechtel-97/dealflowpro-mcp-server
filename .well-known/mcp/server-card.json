@@ -22,7 +22,7 @@
     },
     {
       "name": "score_deal",
-      "description": "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score, verdict, and key metrics. Faster than full analysis.",
+      "description": "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score and key metrics. Faster than full analysis.",
       "inputSchema": {
         "type": "object",
         "properties": {

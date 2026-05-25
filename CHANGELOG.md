@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.1] - 2025-05-25
+## [1.2.0] - 2025-05-25
+
+### Removed
+- Removed fabricated `verdict` field from analyze and score API responses — the app uses manual pipeline stages, not auto-verdicts
 
 ### Fixed
 - Server version in MCP handshake now matches package.json
