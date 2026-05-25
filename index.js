@@ -9,10 +9,11 @@
  *   - analyze_deal: Full multifamily deal analysis with DFP Score
  *   - score_deal: Quick deal scoring (lightweight)
  *   - reverse_calc: Back-solve max offer price from target returns
+ *   - market_data: Flood zone, neighborhood income, job growth
  *
  * Configuration:
- *   Environment variable: DFP_API_KEY (required)
- *   Optional: DFP_API_URL (defaults to https://dealflowpro.io)
+ *   DFP_API_KEY (required) — Your DealFlowPro API key
+ *   DFP_API_URL (optional) — API base URL (defaults to https://dealflowpro.io)
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -110,7 +111,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 // Tool: analyze_deal
@@ -154,7 +155,7 @@ server.tool(
 // Tool: score_deal
 server.tool(
   "score_deal",
-  "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score, verdict (PASS/REVIEW/PURSUE), and key metrics. Faster than full analysis — use this for quick screening.",
+  "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score, verdict (Quick Review / Lead Underwriting / Closed Leads (Pass)), and key metrics. Faster than full analysis — use this for quick screening.",
   {
     purchase_price: z.number().describe("Asking/purchase price in dollars"),
     units: z.number().optional().describe("Number of apartment units"),
@@ -254,10 +255,10 @@ server.tool(
     const d = result.data;
 
     let text = `## Market Data: ${d.address}\n\n`;
-    text += `| Factor | Value | Assessment |\n|--------|-------|------------|\n`;
-    text += `| Flood Zone | ${d.flood_zone.zone_code || "Unknown"} | ${d.flood_zone.in_flood_zone ? "IN flood zone" : "Not in flood zone"} |\n`;
-    text += `| Neighborhood Income | ${d.neighborhood_income.vs_state_median != null ? d.neighborhood_income.vs_state_median + "% vs median" : "Unknown"} | ${d.neighborhood_income.description || "Unknown"} |\n`;
-    text += `| Job Growth | ${d.job_growth.rate != null ? d.job_growth.rate + "%" : "Unknown"} | ${d.job_growth.description || "Unknown"} |\n`;
+    text += `| Factor | Value |\n|--------|-------|\n`;
+    text += `| Flood Zone | ${d.flood_zone.zone_code || "Unknown"} (${d.flood_zone.in_flood_zone ? "In flood zone" : "Not in flood zone"}) |\n`;
+    text += `| Neighborhood Income vs State Median | ${d.neighborhood_income.vs_state_median != null ? d.neighborhood_income.vs_state_median + "%" : "Unknown"} |\n`;
+    text += `| Job Growth Rate | ${d.job_growth.rate != null ? d.job_growth.rate + "%" : "Unknown"} |\n`;
 
     return { content: [{ type: "text", text }] };
   }

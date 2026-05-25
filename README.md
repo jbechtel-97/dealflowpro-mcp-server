@@ -1,5 +1,7 @@
 # DealFlowPro MCP Server
 
+[![dealflowpro-mcp-server MCP server](https://glama.ai/mcp/servers/jbechtel-97/dealflowpro-mcp-server/badges/card.svg)](https://glama.ai/mcp/servers/jbechtel-97/dealflowpro-mcp-server)
+
 Analyze multifamily real estate deals from Claude Code or Claude Desktop. The first real estate underwriting tool in the MCP ecosystem.
 
 DealFlowPro is an AI-powered multifamily deal analysis platform. This MCP server wraps the DealFlowPro REST API, giving AI agents access to institutional-grade underwriting calculations.
@@ -18,7 +20,7 @@ Ask Claude naturally and it calls the right tool:
 | Tool | Description |
 |------|-------------|
 | `analyze_deal` | Full deal analysis: cap rate, DSCR, cash-on-cash, IRR, DFP Score (0-100), max offer price, yearly cashflows |
-| `score_deal` | Quick screening: DFP Score + verdict (PASS/REVIEW/PURSUE) + key metrics |
+| `score_deal` | Quick screening: DFP Score + verdict + key metrics |
 | `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) |
 | `market_data` | Flood zone, neighborhood income vs state median, job growth for any address |
 
@@ -61,11 +63,10 @@ Just ask Claude about a deal. It automatically picks the right tool.
 ```
 ## Deal Analysis Results
 
-**DFP Score: 19/100 (Poor)** | Verdict: **PASS**
+**DFP Score: 19/100 (Poor)** | Verdict: **Closed Leads (Pass)**
 
 ### Verdict Reasons
-- Cash-on-cash return is negative — property loses money monthly
-- Cap rate below 5% — thin returns for the risk
+- Returns Too Low
 
 ### Key Metrics
 | Metric | Value |
