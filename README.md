@@ -12,7 +12,7 @@ Ask Claude naturally and it calls the right tool:
 
 - "Analyze this 24-unit deal in Charlotte — asking $2M, $13.6K/mo rent, $5.5K expenses"
 - "Score this deal: 12 units, $1.5M, $9K monthly income"
-- "What's the max I should offer if I want 8% cash-on-cash?"
+- "What's the max I should offer on a property with $28.8K/mo rent if I want 8% cash-on-cash?"
 - "Is this property in a flood zone? 2909 Burgess Dr, Charlotte, NC"
 
 ## Tools

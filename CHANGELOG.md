@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.0] - 2025-05-25
+## [1.1.1] - 2025-05-25
 
 ### Fixed
 - Server version in MCP handshake now matches package.json
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Added Glama badge to README
+- Fixed reverse_calc example prompt in README to include required monthly_income
 
 ## [1.0.1] - 2025-05-21
 
