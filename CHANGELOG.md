@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2025-05-25
+
+### Fixed
+- market_data: flood zone null values no longer incorrectly display as "Not in flood zone"
+
 ## [1.2.0] - 2025-05-25
 
 ### Removed

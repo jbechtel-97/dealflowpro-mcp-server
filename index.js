@@ -105,7 +105,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.2.0",
+  version: "1.2.1",
 });
 
 // Tool: analyze_deal
@@ -249,7 +249,7 @@ server.tool(
 
     let text = `## Market Data: ${d.address}\n\n`;
     text += `| Factor | Value |\n|--------|-------|\n`;
-    text += `| Flood Zone | ${d.flood_zone.zone_code || "Unknown"} (${d.flood_zone.in_flood_zone ? "In flood zone" : "Not in flood zone"}) |\n`;
+    text += `| Flood Zone | ${d.flood_zone.zone_code || "Unknown"} (${d.flood_zone.in_flood_zone === true ? "In flood zone" : d.flood_zone.in_flood_zone === false ? "Not in flood zone" : "Unknown"}) |\n`;
     text += `| Neighborhood Income vs State Median | ${d.neighborhood_income.vs_state_median != null ? d.neighborhood_income.vs_state_median + "%" : "Unknown"} |\n`;
     text += `| Job Growth Rate | ${d.job_growth.rate != null ? d.job_growth.rate + "%" : "Unknown"} |\n`;
 
