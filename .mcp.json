@@ -1,0 +1,9 @@
+{
+  "dealflowpro": {
+    "command": "npx",
+    "args": ["-y", "dealflowpro-mcp"],
+    "env": {
+      "DFP_API_KEY": "${DFP_API_KEY}"
+    }
+  }
+}
