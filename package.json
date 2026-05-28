@@ -1,6 +1,6 @@
 {
   "name": "dealflowpro-mcp",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "mcpName": "io.github.jbechtel-97/dealflowpro",
   "description": "DealFlowPro MCP Server — Analyze multifamily real estate deals from Claude Code or Claude Desktop",
   "main": "index.js",
@@ -13,7 +13,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0"
   },
-  "keywords": ["mcp", "real-estate", "underwriting", "deal-analysis", "multifamily", "dealflowpro"],
+  "keywords": ["mcp", "mcp-server", "mcp-tools", "claude", "anthropic", "real-estate", "commercial-real-estate", "multifamily", "underwriting", "deal-analysis", "cap-rate", "investment-analysis", "dealflowpro"],
   "license": "MIT",
   "repository": {
     "type": "git",

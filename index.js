@@ -105,7 +105,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.2.1",
+  version: "1.2.2",
 });
 
 // Tool: analyze_deal

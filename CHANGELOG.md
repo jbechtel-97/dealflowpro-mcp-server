@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2026-05-28
+
+### Improved
+- Added npm keywords for better discoverability: `claude`, `anthropic`, `mcp-server`, `mcp-tools`, `commercial-real-estate`, `cap-rate`, `investment-analysis`
+- Updated server-card.json version (was stale at 1.0.1)
+- Added demo screenshot to README
+
 ## [1.2.1] - 2025-05-25
 
 ### Fixed

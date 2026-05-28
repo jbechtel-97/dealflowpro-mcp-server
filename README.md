@@ -6,6 +6,10 @@ Analyze multifamily real estate deals from Claude Code or Claude Desktop. The fi
 
 DealFlowPro is an AI-powered multifamily deal analysis platform. This MCP server wraps the DealFlowPro REST API, giving AI agents access to institutional-grade underwriting calculations.
 
+## Demo
+
+<img src="https://dealflowpro.io/images/mcp-demo.png" alt="DealFlowPro MCP Server analyzing a 24-unit deal in Claude Code" width="700">
+
 ## What You Can Do
 
 Ask Claude naturally and it calls the right tool:
