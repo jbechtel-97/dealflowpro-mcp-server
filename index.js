@@ -20,6 +20,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
+const MCP_VERSION = "1.2.3";
+const USER_AGENT = `dealflowpro-mcp/${MCP_VERSION}`;
+
 const API_KEY = process.env.DFP_API_KEY;
 const API_BASE = (process.env.DFP_API_URL || "https://dealflowpro.io").replace(/\/$/, "");
 
@@ -35,6 +38,7 @@ async function callApi(endpoint, body) {
     headers: {
       "Authorization": `Bearer ${API_KEY}`,
       "Content-Type": "application/json",
+      "User-Agent": USER_AGENT,
     },
     body: JSON.stringify(body),
   });

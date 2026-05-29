@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] - 2026-05-29
+
+### Added
+- Sends `User-Agent: dealflowpro-mcp/1.2.3` on every API call so MCP-originated traffic can be distinguished from direct API use in server-side audit logs
+
 ## [1.2.2] - 2026-05-28
 
 ### Improved
