@@ -28,6 +28,33 @@ Ask Claude naturally and it calls the right tool:
 | `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) |
 | `market_data` | Flood zone, neighborhood income vs state median, job growth for any address |
 
+## For Institutional AI Teams
+
+DealFlowPro is built to slot into AI eval pipelines and production AI stacks. The MCP server (this package, plus the remote endpoint at `https://dealflowpro.io/mcp`) wraps the same engine as the REST API — schema-strict, idempotent, predictable.
+
+**Auth + scoping.** Every tool call requires a Bearer API key. Calls are scoped to the account that issued the key — no cross-tenant access path. Per-tool audit lines land in your account's `logs/mcp_tool_calls.log` capturing tool name + flattened arg keys (not values) — usage is auditable without exposing deal contents.
+
+**Rate limits per tier.**
+
+| Tier | Daily limit | Monthly | Cost |
+|------|------------:|--------:|-----:|
+| Trial | 10 requests/day | ~300 | free (7-day) |
+| Pay-as-you-go | balance-based | per credits | $1/request |
+| Essentials | 50 req/day | ~1,500 | $79/mo |
+| Premium | 200 req/day | ~6,000 | $149/mo |
+| Enterprise | 1,000 req/day | ~30,000 | $399/mo |
+
+Rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) returned on every response. 429 responses include `Retry-After`.
+
+**Error codes.** Stable, documented at [dealflowpro.io/api/docs/#errors](https://dealflowpro.io/api/docs/) — all errors are JSON `{success: false, error: {code, message}}` shape. Codes: `invalid_input` (400), `invalid_json` (400), `unauthorized` (401), `tier_required` (403), `method_not_allowed` (405), `payload_too_large` (413), `rate_limit_exceeded` (429), `internal_error` (500).
+
+**Tool schemas.** Each MCP tool has a schema-strict input definition. Call `tools/list` against the remote endpoint to get the canonical schemas at runtime; the REST OpenAPI spec covers the same shapes (the four MCP tools map 1:1 to the four REST endpoints).
+
+**Eval harness pattern.** For benchmarking, the recommended pattern: maintain a fixture set of (deal payload → expected metrics) pairs, run each against `score_deal` (lowest cost, ~$0.01/call), assert metrics within tolerance. The endpoint is deterministic — same inputs produce the same outputs.
+
+**Data handling.** Request payloads are processed in memory and not persisted to disk. TLS 1.2+ in transit. Anthropic API calls (when DealFlowPro internally uses Claude for document extraction) flow through DealFlowPro's zero-data-retention Anthropic workspace. Full posture: [dealflowpro.io/security#api-mcp-data-handling](https://dealflowpro.io/security#api-mcp-data-handling).
+
+
 ## Setup
 
 ### 1. Get an API Key
