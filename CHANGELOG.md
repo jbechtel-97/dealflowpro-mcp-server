@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.4] - 2026-06-25
+
+### Changed
+- Bumped `@modelcontextprotocol/sdk` from `^1.12.0` to `^1.29.0` (17 minor versions of SDK improvements)
+- Bumped `zod` from `^4.0.0` to `^4.4.3`
+
+### Fixed
+- Declared `zod` as an explicit dependency (was transitive-only through SDK; now pinned in `package.json` for stable version resolution)
+
 ## [1.2.3] - 2026-05-29
 
 ### Added

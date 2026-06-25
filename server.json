@@ -6,12 +6,12 @@
     "url": "https://github.com/jbechtel-97/dealflowpro-mcp-server",
     "source": "github"
   },
-  "version": "1.2.3",
+  "version": "1.2.4",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "dealflowpro-mcp",
-      "version": "1.2.3",
+      "version": "1.2.4",
       "transport": {
         "type": "stdio"
       },

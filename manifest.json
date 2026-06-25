@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "dealflowpro-mcp",
   "display_name": "DealFlowPro",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Multifamily real estate deal analysis — analyze deals, score properties, calculate max offer prices, and look up market data via AI assistants.",
   "author": {
     "name": "Joel Bechtel",
