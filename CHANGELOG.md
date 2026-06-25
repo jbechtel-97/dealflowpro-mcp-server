@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.5] - 2026-06-25
+
+### Changed
+- `score_deal` tool description aligned with the DFP-served MCP endpoint (`mcp_tools.php`). Both now read "Quick screening — returns the 0-100 DFP Score with quality grade." Previous npm description ("Quick DFP Score (0-100) and key metrics") was accurate but less detailed.
+- Bumped `server-card.json` version (was stale at `1.2.2`).
+
 ## [1.2.4] - 2026-06-25
 
 ### Changed

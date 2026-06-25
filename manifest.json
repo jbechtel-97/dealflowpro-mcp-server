@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "dealflowpro-mcp",
   "display_name": "DealFlowPro",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Multifamily real estate deal analysis — analyze deals, score properties, calculate max offer prices, and look up market data via AI assistants.",
   "author": {
     "name": "Joel Bechtel",
@@ -40,7 +40,7 @@
     },
     {
       "name": "score_deal",
-      "description": "Quick DFP Score (0-100) and key metrics — faster than full analysis"
+      "description": "Quick screening — returns the 0-100 DFP Score with quality grade. Faster than full analysis."
     },
     {
       "name": "reverse_calc",
