@@ -59,7 +59,7 @@ DealFlowPro is built to slot into AI eval pipelines and production AI stacks. Th
 
 | Tier | Daily limit | Monthly | Cost |
 |------|------------:|--------:|-----:|
-| Trial | 10 requests/day | ~300 | free (7-day) |
+| Free | 5 requests, lifetime | — | free, no card |
 | Pay-as-you-go | balance-based | per credits | $1/request |
 | Essentials | 50 req/day | ~1,500 | $79/mo |
 | Premium | 200 req/day | ~6,000 | $149/mo |
@@ -111,7 +111,7 @@ anthropic-beta: mcp-client-2025-11-20
 }
 ```
 
-Get a Bearer key (free 1-request key or pay-as-you-go credits) at [dealflowpro.io/api](https://dealflowpro.io/api).
+Get a Bearer key (free 5-request key, no card, or pay-as-you-go credits) at [dealflowpro.io/api](https://dealflowpro.io/api).
 
 Full setup details + Connected Apps revocation: [dealflowpro.io/api/docs#mcp](https://dealflowpro.io/api/docs/#mcp).
 
@@ -119,7 +119,7 @@ Full setup details + Connected Apps revocation: [dealflowpro.io/api/docs#mcp](ht
 
 Use this for **Claude Desktop** (until it supports remote URLs natively) or anywhere you want the MCP server running locally instead of remote.
 
-**1. Get an API key.** Visit [dealflowpro.io/api](https://dealflowpro.io/api) to claim a free 1-request key or buy pay-as-you-go credits. Delivered by email.
+**1. Get an API key.** Visit [dealflowpro.io/api](https://dealflowpro.io/api) to claim a free 5-request key (no card) or buy pay-as-you-go credits. Delivered by email.
 
 **2. Add to your client.**
 
