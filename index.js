@@ -109,14 +109,25 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.2.2",
+  version: "1.2.5",
 });
 
 // Tool: analyze_deal
-server.tool(
+// Annotation values mirror the remote server's mcp_tools.php so the two
+// surfaces describe the same tools identically.
+server.registerTool(
   "analyze_deal",
-  "Analyze a multifamily real estate deal. Returns cap rate, cash-on-cash, DSCR, IRR, DFP Score (0-100), max offer price, and full financial projections. Use this when someone asks about analyzing a property, evaluating a deal, or running the numbers on a multifamily investment.",
   {
+    title: "Analyze Multifamily Deal",
+    description: "Analyze a multifamily real estate deal. Returns cap rate, cash-on-cash, DSCR, IRR, DFP Score (0-100), max offer price, and full financial projections. Use this when someone asks about analyzing a property, evaluating a deal, or running the numbers on a multifamily investment.",
+    annotations: {
+      title: "Analyze Multifamily Deal",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    inputSchema: {
     purchase_price: z.number().describe("Asking/purchase price in dollars"),
     units: z.number().optional().describe("Number of apartment units"),
     monthly_income: z.number().describe("Total monthly rental income in dollars"),
@@ -130,6 +141,7 @@ server.tool(
       "holding-period": z.number().optional().describe("Hold period in years (default 5)"),
       "exit-cap-rate": z.number().optional().describe("Exit cap rate percentage (default 6.5)"),
     }).optional().describe("Override default underwriting assumptions"),
+    },
   },
   async (params) => {
     const body = {
@@ -151,15 +163,25 @@ server.tool(
 );
 
 // Tool: score_deal
-server.tool(
+server.registerTool(
   "score_deal",
-  "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score and key metrics. Faster than full analysis — use this for quick screening.",
   {
-    purchase_price: z.number().describe("Asking/purchase price in dollars"),
-    units: z.number().optional().describe("Number of apartment units"),
-    monthly_income: z.number().describe("Total monthly rental income in dollars"),
-    monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
-    property_address: z.string().optional().describe("Property location"),
+    title: "Score Multifamily Deal (Quick)",
+    description: "Quick-score a multifamily deal on the DFP 0-100 scale. Returns the DFP Score and key metrics. Faster than full analysis — use this for quick screening.",
+    annotations: {
+      title: "Score Multifamily Deal (Quick)",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    inputSchema: {
+      purchase_price: z.number().describe("Asking/purchase price in dollars"),
+      units: z.number().optional().describe("Number of apartment units"),
+      monthly_income: z.number().describe("Total monthly rental income in dollars"),
+      monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
+      property_address: z.string().optional().describe("Property location"),
+    },
   },
   async (params) => {
     const body = {
@@ -189,10 +211,19 @@ server.tool(
 );
 
 // Tool: reverse_calc
-server.tool(
+server.registerTool(
   "reverse_calc",
-  "Calculate the maximum offer price for a multifamily deal based on target return metrics. Back-solves from your desired cap rate, cash-on-cash, DSCR, and/or IRR to find what you should pay. Use this when someone asks 'what should I offer?' or 'what's the max price?'",
   {
+    title: "Reverse-Calculate Max Offer Price",
+    description: "Calculate the maximum offer price for a multifamily deal based on target return metrics. Back-solves from your desired cap rate, cash-on-cash, DSCR, and/or IRR to find what you should pay. Use this when someone asks 'what should I offer?' or 'what's the max price?'",
+    annotations: {
+      title: "Reverse-Calculate Max Offer Price",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    inputSchema: {
     monthly_income: z.number().describe("Total monthly rental income in dollars"),
     monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
     units: z.number().optional().describe("Number of apartment units"),
@@ -209,6 +240,7 @@ server.tool(
       "holding-period": z.number().optional(),
       "exit-cap-rate": z.number().optional(),
     }).optional().describe("Override default underwriting assumptions"),
+    },
   },
   async (params) => {
     const body = {
@@ -240,12 +272,24 @@ server.tool(
 );
 
 // Tool: market_data
-server.tool(
+server.registerTool(
   "market_data",
-  "Look up market intelligence for a property address. Returns flood zone, neighborhood income relative to state median, and job growth rate. Use this when someone asks about a market, neighborhood, or location.",
   {
-    address: z.string().describe("Full property address including city and state (e.g., '2909 Burgess Dr, Charlotte, NC 28208')"),
-    zip: z.string().optional().describe("ZIP code (extracted from address if not provided)"),
+    title: "Lookup Property Market Data",
+    description: "Look up market intelligence for a property address. Returns flood zone, neighborhood income relative to state median, and job growth rate. Use this when someone asks about a market, neighborhood, or location.",
+    annotations: {
+      title: "Lookup Property Market Data",
+      readOnlyHint: true,
+      destructiveHint: false,
+      // External sources (FEMA flood zones, Census ACS, BLS job growth)
+      // can revise between calls, so results are not idempotent.
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    inputSchema: {
+      address: z.string().describe("Full property address including city and state (e.g., '2909 Burgess Dr, Charlotte, NC 28208')"),
+      zip: z.string().optional().describe("ZIP code (extracted from address if not provided)"),
+    },
   },
   async (params) => {
     const result = await callApi("market", { address: params.address, zip: params.zip || "" });

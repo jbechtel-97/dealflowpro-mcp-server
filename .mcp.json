@@ -1,9 +1,8 @@
 {
-  "dealflowpro": {
-    "command": "npx",
-    "args": ["-y", "dealflowpro-mcp"],
-    "env": {
-      "DFP_API_KEY": "${DFP_API_KEY}"
+  "mcpServers": {
+    "dealflowpro": {
+      "type": "http",
+      "url": "https://dealflowpro.io/mcp"
     }
   }
 }

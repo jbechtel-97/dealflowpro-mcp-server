@@ -28,6 +28,27 @@ Ask Claude naturally and it calls the right tool:
 | `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) |
 | `market_data` | Flood zone, neighborhood income vs state median, job growth for any address |
 
+All four carry MCP 2025-06-18 annotations (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`). Every tool is read-only.
+
+## Install as a Claude plugin
+
+This repo doubles as a Claude Code / Cowork plugin. The plugin connects to the
+remote server at `https://dealflowpro.io/mcp` rather than the npm package above,
+which means:
+
+- **Eight tools instead of four.** Adds `list_my_deals`, `get_deal_analysis`,
+  `get_my_criteria`, and `portfolio_summary` — your saved deals, buy-box
+  criteria, and pipeline, scoped to your account.
+- **OAuth instead of an API key.** No `DFP_API_KEY` to export; you sign in to
+  your DealFlowPro account when the plugin connects.
+
+```bash
+claude --plugin-dir /path/to/dealflowpro-mcp-server
+```
+
+Use the npm package below instead if you want a local stdio server, prefer API
+key auth, or are wiring DealFlowPro into a non-Claude MCP client.
+
 ## For Institutional AI Teams
 
 DealFlowPro is built to slot into AI eval pipelines and production AI stacks. The MCP server (this package, plus the remote endpoint at `https://dealflowpro.io/mcp`) wraps the same engine as the REST API — schema-strict, idempotent, predictable.
