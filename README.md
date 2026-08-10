@@ -75,16 +75,55 @@ Rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-R
 
 **Data handling.** Request payloads are processed in memory and not persisted to disk. TLS 1.2+ in transit. Anthropic API calls (when DealFlowPro internally uses Claude for document extraction) flow through DealFlowPro's zero-data-retention Anthropic workspace. Full posture: [dealflowpro.io/security#api-mcp-data-handling](https://dealflowpro.io/security#api-mcp-data-handling).
 
-
 ## Setup
 
-### 1. Get an API Key
+You have **two install paths** — pick the one that matches your client.
 
-Visit [dealflowpro.io/api](https://dealflowpro.io/api) to purchase API credits and get your key instantly.
+### Path A — Remote MCP URL (no local install)
 
-### 2. Install
+Use this for **claude.ai web** (Custom Connectors), **Claude Code with HTTP transport**, or **Claude API mcp_servers**. The endpoint is `https://dealflowpro.io/mcp` (Streamable HTTP, MCP 2025-06-18).
 
-**Claude Desktop** — add to your `claude_desktop_config.json`:
+**claude.ai web:** Settings → Integrations → Add Custom Connector → paste `https://dealflowpro.io/mcp` → sign in to DealFlowPro → click Allow. OAuth handles auth automatically (no API key to manage).
+
+**Claude Code (HTTP):**
+
+```bash
+claude mcp add dealflowpro \
+  --transport http \
+  --url https://dealflowpro.io/mcp \
+  --header "Authorization: Bearer dfp_sk_your_key_here"
+```
+
+**Claude API:**
+
+```http
+POST https://api.anthropic.com/v1/messages
+anthropic-beta: mcp-client-2025-11-20
+
+{
+  "mcp_servers": [{
+    "type": "url",
+    "url": "https://dealflowpro.io/mcp",
+    "name": "dealflowpro",
+    "authorization_token": "dfp_sk_your_key_here"
+  }],
+  ...
+}
+```
+
+Get a Bearer key (free 1-request key or pay-as-you-go credits) at [dealflowpro.io/api](https://dealflowpro.io/api).
+
+Full setup details + Connected Apps revocation: [dealflowpro.io/api/docs#mcp](https://dealflowpro.io/api/docs/#mcp).
+
+### Path B — Local stdio (this npm package)
+
+Use this for **Claude Desktop** (until it supports remote URLs natively) or anywhere you want the MCP server running locally instead of remote.
+
+**1. Get an API key.** Visit [dealflowpro.io/api](https://dealflowpro.io/api) to claim a free 1-request key or buy pay-as-you-go credits. Delivered by email.
+
+**2. Add to your client.**
+
+Claude Desktop — `claude_desktop_config.json`:
 
 ```json
 {
@@ -100,13 +139,13 @@ Visit [dealflowpro.io/api](https://dealflowpro.io/api) to purchase API credits a
 }
 ```
 
-**Claude Code** — add from the terminal:
+Claude Code:
 
 ```bash
 claude mcp add dealflowpro -e DFP_API_KEY=dfp_sk_your_key_here -- npx -y dealflowpro-mcp
 ```
 
-### 3. Use It
+### Use It
 
 Just ask Claude about a deal. It automatically picks the right tool.
 
