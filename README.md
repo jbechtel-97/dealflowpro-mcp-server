@@ -2,7 +2,7 @@
 
 [![dealflowpro-mcp-server MCP server](https://glama.ai/mcp/servers/jbechtel-97/dealflowpro-mcp-server/badges/card.svg)](https://glama.ai/mcp/servers/jbechtel-97/dealflowpro-mcp-server)
 
-Analyze multifamily real estate deals from Claude Code or Claude Desktop. The first real estate underwriting tool in the MCP ecosystem.
+Analyze multifamily real estate deals from Claude Code, Cursor, Claude Desktop, or any MCP-compatible client. The first real estate underwriting tool in the MCP ecosystem.
 
 DealFlowPro is an AI-powered multifamily deal analysis platform. This MCP server wraps the DealFlowPro REST API, giving AI agents access to institutional-grade underwriting calculations.
 
@@ -117,7 +117,7 @@ Full setup details + Connected Apps revocation: [dealflowpro.io/api/docs#mcp](ht
 
 ### Path B — Local stdio (this npm package)
 
-Use this for **Claude Desktop** (until it supports remote URLs natively) or anywhere you want the MCP server running locally instead of remote.
+Use this anywhere you want the MCP server running locally instead of remote — or for a client that has no remote-URL path of its own. Claude Desktop supports both: remote via Settings → Connectors, or the local config below.
 
 **1. Get an API key.** Visit [dealflowpro.io/api](https://dealflowpro.io/api) to claim a free 5-request key (no card) or buy pay-as-you-go credits. Delivered by email.
 
