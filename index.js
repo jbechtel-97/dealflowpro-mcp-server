@@ -20,7 +20,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const MCP_VERSION = "1.2.5";
+const MCP_VERSION = "1.2.6";
 const USER_AGENT = `dealflowpro-mcp/${MCP_VERSION}`;
 
 const API_KEY = process.env.DFP_API_KEY;
@@ -109,7 +109,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.2.5",
+  version: "1.2.6",
 });
 
 // Tool: analyze_deal

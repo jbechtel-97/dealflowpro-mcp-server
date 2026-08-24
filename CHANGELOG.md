@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.6] - 2026-08-24
+
+### Changed
+- README: corrected the claude.ai connection path. It named `Settings → Integrations → Add Custom Connector`, which no longer exists; the current path is `Customize → Connectors → "Add custom connector"`.
+- README: documented the Team/Enterprise variant, which was missing entirely. Members on those plans cannot add a custom connector themselves — an organization Owner adds it once under `Organization settings → Connectors → Add → Custom`, after which each member connects their own DealFlowPro account.
+- README: added the pre-filled install link (`claude.ai/customize/connectors?modal=add-custom-connector&...`) as an "Add DealFlowPro to Claude" button, and stated plainly that DealFlowPro is a custom connector rather than a Connectors Directory listing.
+
+No functional change — this release exists so npmjs.com serves the corrected README, which only refreshes on publish.
+
 ## [1.2.5] - 2026-06-25
 
 ### Changed
