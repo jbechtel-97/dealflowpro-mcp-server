@@ -1,0 +1,47 @@
+name: npm token canary
+
+# NPM_TOKEN is exercised by exactly one thing — the publish job in publish.yml, which fires
+# only on a published release. Between releases the token can expire, be revoked, or be
+# rotated away and nothing notices; the symptom surfaces as a failed publish, i.e. during a
+# release, which is the worst moment to discover it. Last real exercise before this job
+# existed: 2026-06-25 (v1.2.5). This runs monthly and on demand instead.
+#
+# WHAT THIS PROVES: the token authenticates and has not expired.
+# WHAT IT DOES NOT PROVE: publish rights on `dealflowpro-mcp` — a read-only token passes
+# `npm whoami` just fine. Kept deliberately narrow: a canary that false-alarms gets ignored,
+# and a publish-scope check has no non-destructive form worth the flakiness.
+#
+# Notification is GitHub's own scheduled-workflow failure email to the repo owner. No Brevo
+# bridge: this repo has no route to sendDfpEmail(), and standing up one for a monthly
+# liveness check would be more moving parts than the check itself.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 1st of each month, 13:00 UTC (09:00 America/New_York during EDT).
+    - cron: '0 13 1 * *'
+
+jobs:
+  whoami:
+    name: NPM_TOKEN still authenticates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if ! who=$(npm whoami 2>&1); then
+            echo "::error::NPM_TOKEN did not authenticate — releases will fail at the publish step."
+            echo "npm said: $who"
+            echo ""
+            echo "Fix: mint a new Automation token at npmjs.com -> Access Tokens, then"
+            echo "  gh secret set NPM_TOKEN --repo jbechtel-97/dealflowpro-mcp-server"
+            echo "and re-run this workflow to confirm."
+            exit 1
+          fi
+          echo "NPM_TOKEN authenticates as: $who"
