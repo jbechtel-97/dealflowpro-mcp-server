@@ -83,7 +83,11 @@ You have **two install paths** — pick the one that matches your client.
 
 Use this for **claude.ai web** (Custom Connectors), **Claude Code with HTTP transport**, or **Claude API mcp_servers**. The endpoint is `https://dealflowpro.io/mcp` (Streamable HTTP, MCP 2025-06-18).
 
-**claude.ai web:** Settings → Integrations → Add Custom Connector → paste `https://dealflowpro.io/mcp` → sign in to DealFlowPro → click Allow. OAuth handles auth automatically (no API key to manage).
+**claude.ai web / Claude Desktop:** DealFlowPro is not in Anthropic's Connectors Directory, so add it as a **custom connector** — Customize → Connectors → "Add custom connector" → name it `DealFlowPro`, paste `https://dealflowpro.io/mcp` → Add → Connect → sign in to DealFlowPro → click Allow. OAuth handles auth automatically (no API key to manage). Then in a chat, click "+" → Connectors → toggle DealFlowPro on.
+
+[**Add DealFlowPro to Claude →**](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=DealFlowPro&connectorUrl=https%3A%2F%2Fdealflowpro.io%2Fmcp) — opens the dialog with the name and URL pre-filled. You still review and confirm before anything is added.
+
+**Team / Enterprise plans:** members cannot add custom connectors themselves. An organization Owner adds it once under Organization settings → Connectors → Add → Custom (type: Web), and each member then connects their own DealFlowPro account from Customize → Connectors.
 
 **Claude Code (HTTP):**
 
