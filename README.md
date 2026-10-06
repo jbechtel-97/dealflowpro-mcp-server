@@ -2,7 +2,7 @@
 
 [![dealflowpro-mcp-server MCP server](https://glama.ai/mcp/servers/jbechtel-97/dealflowpro-mcp-server/badges/card.svg)](https://glama.ai/mcp/servers/jbechtel-97/dealflowpro-mcp-server)
 
-Analyze multifamily real estate deals from Claude Code, Cursor, Claude Desktop, or any MCP-compatible client. The first real estate underwriting tool in the MCP ecosystem.
+Analyze multifamily real estate deals from Claude Code, Cursor, Claude Desktop, or any MCP-compatible client.
 
 DealFlowPro is an AI-powered multifamily deal analysis platform. This MCP server wraps the DealFlowPro REST API, giving AI agents access to institutional-grade underwriting calculations.
 
