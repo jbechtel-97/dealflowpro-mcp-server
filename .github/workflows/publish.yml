@@ -3,6 +3,9 @@ name: Publish to npm + MCP Registry
 on:
   release:
     types: [published]
+  # Manual run: publishes the version in package.json from the branch you pick. Exists so a
+  # failed publish can be retried without deleting and re-creating a release tag.
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -18,9 +21,16 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install
       - run: npm test
+
+      # npm Trusted Publishing (OIDC): no NPM_TOKEN secret, so nothing to rotate or expire.
+      # npm 2026-10-06: granular tokens that bypass 2FA and publish directly are being
+      # deprecated (removed Jan 2027) and CI is told to use Trusted Publishing. The 9/7
+      # NPM_TOKEN failed this step with EOTP. Trusted publishing needs npm >= 11.5.1 (Node 22
+      # ships 10.x) and a trusted publisher configured on npmjs.com for
+      # jbechtel-97/dealflowpro-mcp-server + workflow file publish.yml.
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@^11.5.1 && npm -v
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # Publish updated server.json to the official MCP Registry.
       # Without this step (added in the 1.2.3 republish window), npm got every
