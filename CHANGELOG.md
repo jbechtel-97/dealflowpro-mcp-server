@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.7] - 2026-10-06
+
+### Changed
+- README: DealFlowPro is now listed in the Claude Connectors Directory (published 2026-10-06 as a community connector); the README links the listing and keeps the custom-connector path.
+- README: dropped the "first real estate underwriting tool in the MCP ecosystem" claim, which could not be verified.
+- README: corrected three stale statements. Auth is a Bearer key or, on the remote endpoint, an OAuth sign-in; the four saved-pipeline tools on the remote server are MCP-only; the `~$0.01/call` eval figure contradicted the pay-as-you-go price and was removed.
+
+No functional change to the stdio server. This release exists so npmjs.com and the MCP Registry serve the corrected README, which only refresh on publish.
+
 ## [1.2.6] - 2026-08-24
 
 ### Changed
