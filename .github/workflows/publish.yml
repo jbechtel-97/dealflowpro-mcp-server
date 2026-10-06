@@ -30,7 +30,28 @@ jobs:
       # jbechtel-97/dealflowpro-mcp-server + workflow file publish.yml.
       - name: Update npm for trusted publishing
         run: npm install -g npm@^11.5.1 && npm -v
-      - run: npm publish --provenance --access public
+      # Idempotent: a retry after a partial failure must not try to publish the same version
+      # twice (npm refuses, and the whole run would fail before the MCP Registry step).
+      - name: Publish to npm (skipped if this version is already there)
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "dealflowpro-mcp@$v" version >/dev/null 2>&1; then
+            echo "dealflowpro-mcp@$v is already on npm, skipping publish"
+          else
+            npm publish --provenance --access public
+          fi
+
+      # npm now says "your package is being processed and may take a few minutes". The MCP
+      # Registry validates that the npm version exists, so registering immediately fails
+      # with a 404 (seen 2026-10-06 on 1.2.7). Wait for it to be visible first.
+      - name: Wait for the npm version to be visible
+        run: |
+          v=$(node -p "require('./package.json').version")
+          for i in $(seq 1 36); do
+            if npm view "dealflowpro-mcp@$v" version >/dev/null 2>&1; then echo "dealflowpro-mcp@$v is visible on npm"; exit 0; fi
+            echo "waiting for dealflowpro-mcp@$v to appear on npm ($i/36)"; sleep 10
+          done
+          echo "::error::dealflowpro-mcp@$v never appeared on npm"; exit 1
 
       # Publish updated server.json to the official MCP Registry.
       # Without this step (added in the 1.2.3 republish window), npm got every
