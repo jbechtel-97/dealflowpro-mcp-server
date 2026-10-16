@@ -132,8 +132,10 @@ server.registerTool(
     units: z.number().optional().describe("Number of apartment units"),
     monthly_income: z.number().describe("Total monthly rental income in dollars"),
     monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars (if omitted, 50% of income is assumed)"),
-    property_address: z.string().optional().describe("Property location (city, state)"),
+    property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
     year_built: z.number().optional().describe("Year the property was built"),
+    income_source: z.string().optional().describe("Where monthly_income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
+    expense_source: z.string().optional().describe("Where monthly_expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
     assumptions: z.object({
       "down-payment": z.number().optional().describe("Down payment percentage (default 25)"),
       "interest-rate": z.number().optional().describe("Loan interest rate percentage (default 6.5)"),
@@ -156,6 +158,8 @@ server.registerTool(
       assumptions: params.assumptions || null,
       scenario: "proforma",
     };
+    if (params.income_source) body.deal.income_source = params.income_source;
+    if (params.expense_source) body.deal.expense_source = params.expense_source;
 
     const result = await callApi("analyze", body);
     return { content: [{ type: "text", text: formatAnalysisResult(result) }] };
@@ -180,7 +184,9 @@ server.registerTool(
       units: z.number().optional().describe("Number of apartment units"),
       monthly_income: z.number().describe("Total monthly rental income in dollars"),
       monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
-      property_address: z.string().optional().describe("Property location"),
+      property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
+      income_source: z.string().optional().describe("Where monthly_income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
+      expense_source: z.string().optional().describe("Where monthly_expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
     },
   },
   async (params) => {
@@ -193,6 +199,8 @@ server.registerTool(
         property_address: params.property_address || "",
       },
     };
+    if (params.income_source) body.deal.income_source = params.income_source;
+    if (params.expense_source) body.deal.expense_source = params.expense_source;
 
     const result = await callApi("score", body);
     const d = result.data;
@@ -298,6 +306,12 @@ server.registerTool(
     let text = `## Market Data: ${d.address}\n\n`;
     text += `| Factor | Value |\n|--------|-------|\n`;
     text += `| Flood Zone | ${d.flood_zone.zone_code || "Unknown"} (${d.flood_zone.in_flood_zone === true ? "In flood zone" : d.flood_zone.in_flood_zone === false ? "Not in flood zone" : "Unknown"}) |\n`;
+    // near_boundary is only true when a hazard zone (A/V) and a non-hazard zone are both nearby, so
+    // false/null does not mean "far from an edge". null means "not determined", never false.
+    if (d.flood_zone.near_boundary === true) {
+      const zones = Array.isArray(d.flood_zone.nearby_zones) && d.flood_zone.nearby_zones.length ? ` (nearby zones: ${d.flood_zone.nearby_zones.join(", ")})` : "";
+      text += `| Flood Boundary | Near a flood-zone boundary${zones}: verify with an elevation certificate before relying on the zone above |\n`;
+    }
     text += `| Neighborhood Income vs State Median | ${d.neighborhood_income.vs_state_median != null ? d.neighborhood_income.vs_state_median + "%" : "Unknown"} |\n`;
     text += `| Job Growth Rate | ${d.job_growth.rate != null ? d.job_growth.rate + "%" : "Unknown"} |\n`;
 
