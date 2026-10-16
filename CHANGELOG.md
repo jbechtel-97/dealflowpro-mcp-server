@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.9] - 2026-10-16
+
+### Changed
+- **`analyze_deal` and `reverse_calc` now default to the `current` scenario, matching the hosted server and the REST API.** Previous versions hard-coded `proforma`, which applies forward-looking defaults (5% vacancy instead of 7%) and returns more favorable figures for the same deal. On a 24-unit test deal the same inputs gave a 5.49% cap rate and +2.0% IRR under `proforma` and 5.26% and -0.7% under `current`. **If you relied on the old numbers, pass `scenario: "proforma"`.**
+
+### Added
+- Optional `scenario` (`current` or `proforma`) on `analyze_deal` and `reverse_calc`.
+
+No change to the DFP Score inputs or to `score_deal` and `market_data`.
+
 ## [1.2.8] - 2026-10-16
 
 ### Added

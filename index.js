@@ -20,7 +20,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const MCP_VERSION = "1.2.8";
+const MCP_VERSION = "1.2.9";
 const USER_AGENT = `dealflowpro-mcp/${MCP_VERSION}`;
 
 const API_KEY = process.env.DFP_API_KEY;
@@ -109,7 +109,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.2.8",
+  version: "1.2.9",
 });
 
 // Tool: analyze_deal
@@ -136,6 +136,7 @@ server.registerTool(
     year_built: z.number().optional().describe("Year the property was built"),
     income_source: z.string().optional().describe("Where monthly_income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
     expense_source: z.string().optional().describe("Where monthly_expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
+    scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current: in-place numbers with DFP's default 7% vacancy. proforma applies forward-looking defaults (5% vacancy) and returns more favorable figures for the same deal. Pass it explicitly when comparing results."),
     assumptions: z.object({
       "down-payment": z.number().optional().describe("Down payment percentage (default 25)"),
       "interest-rate": z.number().optional().describe("Loan interest rate percentage (default 6.5)"),
@@ -156,7 +157,7 @@ server.registerTool(
         year_built: params.year_built,
       },
       assumptions: params.assumptions || null,
-      scenario: "proforma",
+      scenario: params.scenario || "current",
     };
     if (params.income_source) body.deal.income_source = params.income_source;
     if (params.expense_source) body.deal.expense_source = params.expense_source;
@@ -235,6 +236,7 @@ server.registerTool(
     monthly_income: z.number().describe("Total monthly rental income in dollars"),
     monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
     units: z.number().optional().describe("Number of apartment units"),
+    scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current: in-place numbers with DFP's default 7% vacancy. proforma applies forward-looking defaults (5% vacancy) and returns more favorable figures for the same deal. Pass it explicitly when comparing results."),
     targets: z.object({
       cap_rate: z.number().optional().describe("Target cap rate (e.g., 7 for 7%)"),
       cash_on_cash: z.number().optional().describe("Target cash-on-cash return (e.g., 8 for 8%)"),
@@ -259,7 +261,7 @@ server.registerTool(
       },
       targets: params.targets,
       assumptions: params.assumptions || null,
-      scenario: "proforma",
+      scenario: params.scenario || "current",
     };
 
     const result = await callApi("reverse-calc", body);
