@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.8] - 2026-10-16
+
+### Added
+- `market_data`: the text output adds a **Flood Boundary** row when the API reports `near_boundary: true`, listing the nearby zones. The remote API now returns `near_boundary`, `nearby_zones`, `advisory`, `interpolated` and `geocode_confidence` under `flood_zone`. `near_boundary` is true only when a hazard zone (A or V) and a non-hazard zone are both within a short buffer of the geocoded point, so `false` does not mean the property is far from a zone edge.
+- `analyze_deal` and `score_deal`: optional `income_source` and `expense_source` (for example `RentRoll`, `T12`, `OM`, `Screen`). They raise the confidence rating on the result.
+
+### Changed
+- `property_address` is now described as the full street address that drives the market data behind the DFP Score. Without it the market component is understated.
+
+No change to scoring or to the numbers returned for the same inputs.
+
 ## [1.2.7] - 2026-10-06
 
 ### Changed
