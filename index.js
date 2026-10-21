@@ -143,6 +143,8 @@ server.registerTool(
       "vacancy-rate": z.number().optional().describe("Vacancy rate percentage (default 7)"),
       "holding-period": z.number().optional().describe("Hold period in years (default 5)"),
       "exit-cap-rate": z.number().optional().describe("Exit cap rate percentage (default 6.5)"),
+      "interest-basis": z.enum(["365-360", "30-360"]).optional().describe("First mortgage interest basis. 365-360: interest accrues at rate x 365/360 (commercial / agency convention); 30-360: every month counts as 30 days. Omitted: the account's Settings default"),
+      "second-mortgage-interest-basis": z.enum(["365-360", "30-360"]).optional().describe("Second mortgage interest basis, same values"),
     }).optional().describe("Override default underwriting assumptions"),
     },
   },
@@ -188,6 +190,10 @@ server.registerTool(
       property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
       income_source: z.string().optional().describe("Where monthly_income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
       expense_source: z.string().optional().describe("Where monthly_expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
+      assumptions: z.object({
+      "interest-basis": z.enum(["365-360", "30-360"]).optional().describe("First mortgage interest basis. 365-360: interest accrues at rate x 365/360 (commercial / agency convention); 30-360: every month counts as 30 days. Omitted: the account's Settings default"),
+      "second-mortgage-interest-basis": z.enum(["365-360", "30-360"]).optional().describe("Second mortgage interest basis, same values"),
+      }).optional().describe("Only the interest basis can be overridden on a quick score (it feeds IRR and cash-on-cash); use analyze_deal for other assumptions"),
     },
   },
   async (params) => {
@@ -200,6 +206,7 @@ server.registerTool(
         property_address: params.property_address || "",
       },
     };
+    if (params.assumptions) body.assumptions = params.assumptions;
     if (params.income_source) body.deal.income_source = params.income_source;
     if (params.expense_source) body.deal.expense_source = params.expense_source;
 
@@ -249,6 +256,8 @@ server.registerTool(
       "vacancy-rate": z.number().optional(),
       "holding-period": z.number().optional(),
       "exit-cap-rate": z.number().optional(),
+      "interest-basis": z.enum(["365-360", "30-360"]).optional().describe("First mortgage interest basis. 365-360: interest accrues at rate x 365/360 (commercial / agency convention); 30-360: every month counts as 30 days. Omitted: the account's Settings default"),
+      "second-mortgage-interest-basis": z.enum(["365-360", "30-360"]).optional().describe("Second mortgage interest basis, same values"),
     }).optional().describe("Override default underwriting assumptions"),
     },
   },
