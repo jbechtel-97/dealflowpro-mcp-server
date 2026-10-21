@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.3.0] - 2026-10-21
 
 ### Added
 - Optional `interest-basis` and `second-mortgage-interest-basis` (`365-360` or `30-360`) in `assumptions` on `analyze_deal`, `reverse_calc` and `score_deal`. 365/360 accrues interest at rate x 365/360 (the commercial and agency convention): the amortizing payment and DSCR are unchanged, while interest-only payments, loan balances, sale proceeds and IRR move. Omitted, the account's Settings default applies. `score_deal` accepts only these two overrides; any other key returns a 400.
