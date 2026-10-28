@@ -8,6 +8,7 @@
     "url": "https://dealflowpro.io"
   },
   "homepage": "https://dealflowpro.io",
+  "privacyPolicyUrl": "https://dealflowpro.io/privacy.php",
   "repository": "https://github.com/jbechtel-97/dealflowpro-mcp-server",
   "license": "MIT",
   "keywords": [
