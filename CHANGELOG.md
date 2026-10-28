@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.4.0] - 2026-10-28
 
 ### Added
 - `reverse_calc` accepts a `price_per_unit` target (maximum price per unit in dollars; requires `units`). The solved price is the target times `units`, and it can be the binding constraint alongside cap rate, cash-on-cash, DSCR and IRR.
