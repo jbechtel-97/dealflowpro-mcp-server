@@ -25,7 +25,7 @@ Ask Claude naturally and it calls the right tool:
 |------|-------------|
 | `analyze_deal` | Full deal analysis: cap rate, DSCR, cash-on-cash, IRR, DFP Score (0-100), max offer price, yearly cashflows |
 | `score_deal` | Quick screening: DFP Score + key metrics |
-| `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) |
+| `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) and an optional price-per-unit ceiling |
 | `market_data` | Flood zone, neighborhood income vs state median, job growth for any address |
 
 All four carry MCP 2025-06-18 annotations (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`). Every tool is read-only.

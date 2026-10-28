@@ -249,6 +249,7 @@ server.registerTool(
       cash_on_cash: z.number().optional().describe("Target cash-on-cash return (e.g., 8 for 8%)"),
       dscr: z.number().optional().describe("Target DSCR (e.g., 1.25)"),
       irr: z.number().optional().describe("Target IRR (e.g., 15 for 15%)"),
+      price_per_unit: z.number().optional().describe("Maximum price per unit in dollars (e.g., 120000). Requires units."),
     }).describe("Target return metrics — provide at least one"),
     assumptions: z.object({
       "down-payment": z.number().optional(),

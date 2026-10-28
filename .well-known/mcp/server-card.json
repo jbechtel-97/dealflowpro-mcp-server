@@ -51,7 +51,8 @@
               "cap_rate": { "type": "number", "description": "Target cap rate (e.g., 7 for 7%)" },
               "cash_on_cash": { "type": "number", "description": "Target cash-on-cash return (e.g., 8 for 8%)" },
               "dscr": { "type": "number", "description": "Target DSCR (e.g., 1.25)" },
-              "irr": { "type": "number", "description": "Target IRR (e.g., 15 for 15%)" }
+              "irr": { "type": "number", "description": "Target IRR (e.g., 15 for 15%)" },
+              "price_per_unit": { "type": "number", "description": "Maximum price per unit in dollars (e.g., 120000). Requires units." }
             }
           }
         },
