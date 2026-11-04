@@ -15,7 +15,7 @@ DealFlowPro is an AI-powered multifamily deal analysis platform. This MCP server
 Ask Claude naturally and it calls the right tool:
 
 - "Analyze this 24-unit deal in Charlotte — asking $2M, $13.6K/mo rent, $5.5K expenses"
-- "Score this deal: 12 units, $1.5M, $9K monthly income"
+- "Score this deal: 12 units, $1.5M, $9K/mo rent, $3.8K/mo expenses"
 - "What's the max I should offer on a property with $28.8K/mo rent if I want 8% cash-on-cash?"
 - "Is this property in a flood zone? 2909 Burgess Dr, Charlotte, NC"
 
@@ -26,7 +26,7 @@ Ask Claude naturally and it calls the right tool:
 | `analyze_deal` | Full deal analysis: cap rate, DSCR, cash-on-cash, IRR, DFP Score (0-100), max offer price, yearly cashflows |
 | `score_deal` | Quick screening: DFP Score + key metrics |
 | `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) and an optional price-per-unit ceiling |
-| `market_data` | Flood zone, neighborhood income vs state median, job growth for any address |
+| `market_data` | Flood zone, mapped wetlands, neighborhood income vs state median, rent burden, job growth for any US address |
 
 All four carry MCP 2025-06-18 annotations (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`). Every tool is read-only.
 
