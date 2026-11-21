@@ -63,6 +63,16 @@ function formatPercent(n) {
   return n.toFixed(2) + "%";
 }
 
+/** One line saying which monthly CapEx the numbers used and where it came from (API assumptions_used). */
+function capexLine(u) {
+  if (!u || !("capex_basis" in u)) return "";
+  if (u.monthly_capex === null || u.monthly_capex === undefined) return `**CapEx:** not included. ${u.capex_note || ""}\n\n`;
+  const basis = u.capex_basis === "account_per_unit_yearly"
+    ? `your CapEx setting of ${formatCurrency(u["capex-per-unit-yearly"])}/unit/yr x ${u.capex_units} units / 12`
+    : "the monthly_capex you gave";
+  return `**CapEx:** ${formatCurrency(u.monthly_capex)}/mo (${basis})\n\n`;
+}
+
 function formatAnalysisResult(data) {
   const d = data.data;
   const m = d.metrics || {};
@@ -90,6 +100,7 @@ function formatAnalysisResult(data) {
   result += `| Annual Cash Flow | ${formatCurrency(f.annual_cash_flow)} |\n`;
   result += `| Total Cash Required | ${formatCurrency(f.total_cash_invested)} |\n`;
   result += `| Loan Amount | ${formatCurrency(f.loan_amount)} |\n\n`;
+  result += capexLine(d.assumptions_used);
 
   if (mo.binding_price) {
     result += `### Max Offer Price\n`;
@@ -109,7 +120,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.4.0",
+  version: "1.5.0",
 });
 
 // Tool: analyze_deal
@@ -129,7 +140,8 @@ server.registerTool(
     },
     inputSchema: {
     purchase_price: z.number().describe("Asking/purchase price in dollars"),
-    units: z.number().optional().describe("Number of apartment units"),
+    units: z.number().int().positive().describe("Number of apartment units (required). Turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve."),
+    monthly_capex: z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
     monthly_income: z.number().describe("Total monthly rental income in dollars"),
     monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars (if omitted, 50% of income is assumed)"),
     property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
@@ -152,7 +164,7 @@ server.registerTool(
     const body = {
       deal: {
         purchase_price: params.purchase_price,
-        units: params.units || 0,
+        units: params.units,
         monthly_income: params.monthly_income,
         monthly_expenses: params.monthly_expenses || 0,
         property_address: params.property_address || "",
@@ -164,6 +176,7 @@ server.registerTool(
     if (params.income_source) body.deal.income_source = params.income_source;
     if (params.expense_source) body.deal.expense_source = params.expense_source;
 
+    if (params.monthly_capex !== undefined) body.deal.monthly_capex = params.monthly_capex;
     const result = await callApi("analyze", body);
     return { content: [{ type: "text", text: formatAnalysisResult(result) }] };
   }
@@ -184,7 +197,8 @@ server.registerTool(
     },
     inputSchema: {
       purchase_price: z.number().describe("Asking/purchase price in dollars"),
-      units: z.number().optional().describe("Number of apartment units"),
+      units: z.number().int().positive().describe("Number of apartment units (required). Turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve."),
+    monthly_capex: z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
       monthly_income: z.number().describe("Total monthly rental income in dollars"),
       monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
       property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
@@ -200,7 +214,7 @@ server.registerTool(
     const body = {
       deal: {
         purchase_price: params.purchase_price,
-        units: params.units || 0,
+        units: params.units,
         monthly_income: params.monthly_income,
         monthly_expenses: params.monthly_expenses || 0,
         property_address: params.property_address || "",
@@ -210,6 +224,7 @@ server.registerTool(
     if (params.income_source) body.deal.income_source = params.income_source;
     if (params.expense_source) body.deal.expense_source = params.expense_source;
 
+    if (params.monthly_capex !== undefined) body.deal.monthly_capex = params.monthly_capex;
     const result = await callApi("score", body);
     const d = result.data;
     const s = d.dfp_score || {};
@@ -222,6 +237,7 @@ server.registerTool(
     text += `| Cash-on-Cash | ${formatPercent(km.cash_on_cash)} |\n`;
     text += `| NOI | ${formatCurrency(km.noi)} |\n`;
 
+    text += `\n` + capexLine(d.assumptions_used);
     return { content: [{ type: "text", text }] };
   }
 );
@@ -242,14 +258,15 @@ server.registerTool(
     inputSchema: {
     monthly_income: z.number().describe("Total monthly rental income in dollars"),
     monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
-    units: z.number().optional().describe("Number of apartment units"),
+    units: z.number().int().positive().describe("Number of apartment units (required). Turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve."),
+    monthly_capex: z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
     scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current: in-place numbers with DFP's default 7% vacancy. proforma applies forward-looking defaults (5% vacancy) and returns more favorable figures for the same deal. Pass it explicitly when comparing results."),
     targets: z.object({
       cap_rate: z.number().optional().describe("Target cap rate (e.g., 7 for 7%)"),
       cash_on_cash: z.number().optional().describe("Target cash-on-cash return (e.g., 8 for 8%)"),
       dscr: z.number().optional().describe("Target DSCR (e.g., 1.25)"),
       irr: z.number().optional().describe("Target IRR (e.g., 15 for 15%)"),
-      price_per_unit: z.number().optional().describe("Maximum price per unit in dollars (e.g., 120000). Requires units."),
+      price_per_unit: z.number().optional().describe("Maximum price per unit in dollars (e.g., 120000)."),
     }).describe("Target return metrics — provide at least one"),
     assumptions: z.object({
       "down-payment": z.number().optional(),
@@ -267,17 +284,19 @@ server.registerTool(
       deal: {
         monthly_income: params.monthly_income,
         monthly_expenses: params.monthly_expenses || 0,
-        units: params.units || 0,
+        units: params.units,
       },
       targets: params.targets,
       assumptions: params.assumptions || null,
       scenario: params.scenario || "current",
     };
 
+    if (params.monthly_capex !== undefined) body.deal.monthly_capex = params.monthly_capex;
     const result = await callApi("reverse-calc", body);
     const d = result.data;
 
     let text = `## Max Offer Price: ${formatCurrency(d.max_offer_price)}\n\n`;
+    text += capexLine(d.assumptions_used);
     text += `**Binding constraint: ${d.binding_constraint}**\n`;
     if (d.price_per_unit) text += `Price per unit: ${formatCurrency(d.price_per_unit)}\n`;
     text += `\n`;

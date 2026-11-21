@@ -124,6 +124,15 @@ async function runTests() {
     );
   }
 
+  // Test 11: units is required on the three underwriting tools (the API rejects a deal without it, 2026-11-21)
+  for (const name of ["analyze_deal", "score_deal", "reverse_calc"]) {
+    const tool = tools.find((t) => t.name === name);
+    assert(
+      Array.isArray(tool?.inputSchema?.required) && tool.inputSchema.required.includes("units"),
+      `Tool "${name}" requires units`
+    );
+  }
+
   // Clean up
   proc.kill();
 

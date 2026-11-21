@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-11-21
+
+### Changed
+- `units` is now required on `analyze_deal`, `score_deal` and `reverse_calc`. The hosted API rejects a deal without it: the unit count turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve, the same CapEx the DealFlowPro lead page uses. Before this, a call without `monthly_capex` was underwritten with no CapEx at all.
+- Results now say which monthly CapEx the numbers used and where it came from (your setting x units / 12, or the `monthly_capex` you gave).
+
+### Added
+- Optional `monthly_capex` on all three tools: a monthly CapEx reserve for this deal, used as-is.
+
 ## [1.4.0] - 2026-10-28
 
 ### Added
