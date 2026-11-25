@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-11-25
+
+### Changed
+- Hyphen keys in and out, matching the hosted API (Spec 535). Tool inputs are now `purchase-price`, `monthly-income`, `monthly-expenses`, `monthly-capex`, `property-address`, `property-name`, `year-built`, `income-source`, `expense-source`, and the `reverse_calc` targets `cap-rate`, `cash-on-cash`, `price-per-unit` (`dscr`, `irr` and `units` are unchanged). Every key in the API response is hyphen-case too, and the bridge reads it that way. **If you call the tools with the old underscore names, switch to the hyphen names.** The hosted API still accepts the old underscore request spellings, but they are deprecated and logged.
+- Expenses are never assumed. When `monthly-expenses` is omitted the bridge no longer sends 0 (and the old "50% of income" text is gone): NOI and the ratios built on it are withheld, with the reason, and nothing is estimated. A typed 0 is sent as 0.
+- Removed the false defaults text. The assumption overrides no longer claim "(default 25)", "(default 6.5)", "(default 7)" or "(default 5)", and the scenario descriptions no longer claim a 7% or 5% vacancy: omitted assumptions use your account's saved assumption, and one the account has not set makes the call fail naming it.
+
+### Added
+- A 422 `missing_inputs` from the API is shown as a clear message listing each missing input key, the reason, and what it withholds, instead of a generic error.
+
 ## [1.5.0] - 2026-11-21
 
 ### Changed

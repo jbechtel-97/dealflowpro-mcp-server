@@ -133,6 +133,36 @@ async function runTests() {
     );
   }
 
+  // Test 12: tool input schemas use hyphen parameter names, none of the old underscore names
+  const props = (name) => Object.keys(tools.find((t) => t.name === name)?.inputSchema?.properties || {});
+  const targetProps = Object.keys(
+    tools.find((t) => t.name === "reverse_calc")?.inputSchema?.properties?.targets?.properties || {}
+  );
+  const hyphenExpected = {
+    analyze_deal: ["purchase-price", "monthly-income", "monthly-expenses", "monthly-capex", "property-address", "year-built", "income-source", "expense-source", "units"],
+    score_deal: ["purchase-price", "monthly-income", "monthly-expenses", "monthly-capex", "property-address", "income-source", "expense-source", "units"],
+    reverse_calc: ["monthly-income", "monthly-expenses", "monthly-capex", "units"],
+  };
+  for (const [name, expected] of Object.entries(hyphenExpected)) {
+    const have = props(name);
+    for (const key of expected) {
+      assert(have.includes(key), `Tool "${name}" has parameter "${key}"`);
+    }
+  }
+  for (const key of ["cap-rate", "cash-on-cash", "price-per-unit", "dscr", "irr"]) {
+    assert(targetProps.includes(key), `reverse_calc target "${key}" is present`);
+  }
+  const oldNames = ["purchase_price", "monthly_income", "monthly_expenses", "monthly_capex", "property_address", "property_name", "year_built", "income_source", "expense_source", "cap_rate", "cash_on_cash", "price_per_unit"];
+  for (const tool of tools) {
+    const all = [...props(tool.name), ...(tool.name === "reverse_calc" ? targetProps : [])];
+    const bad = all.filter((k) => oldNames.includes(k));
+    assert(bad.length === 0, `Tool "${tool.name}" has no underscore parameter names${bad.length ? " (found " + bad.join(", ") + ")" : ""}`);
+  }
+  // No false defaults text in descriptions
+  const allSchemaText = JSON.stringify(tools);
+  assert(!/\(default \d/.test(allSchemaText), "No '(default N)' assumption claims in tool schemas");
+  assert(!/50% of income/.test(allSchemaText), "No '50% of income' expense assumption text");
+
   // Clean up
   proc.kill();
 

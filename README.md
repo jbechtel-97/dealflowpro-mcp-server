@@ -28,6 +28,10 @@ Ask Claude naturally and it calls the right tool:
 | `reverse_calc` | Max offer price from target returns (cap rate, CoC, DSCR, IRR) and an optional price-per-unit ceiling |
 | `market_data` | Flood zone, mapped wetlands, neighborhood income vs state median, rent burden, job growth for any US address |
 
+Tool inputs use hyphen names: `purchase-price`, `units`, `monthly-income`, `monthly-expenses`, `monthly-capex`, `property-address`, `year-built`, `income-source`, `expense-source`, and for `reverse_calc` targets `cap-rate`, `cash-on-cash`, `price-per-unit`, `dscr`, `irr`. The REST API uses hyphen keys in requests and responses too (for example `dfp-score`, `going-in-cap-rate`, `max-offer-price`); the old underscore request spellings still work server-side but are deprecated.
+
+Nothing is assumed for you. If you omit `monthly-expenses`, NOI and the ratios built on it are withheld, with the reason (a typed `0` is a value). Omitted underwriting assumptions use your account's saved assumptions; if your account has not set one the analysis needs, the API returns 422 `missing_inputs` and the tool lists each missing input and what it withholds.
+
 All four carry MCP 2025-06-18 annotations (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`). Every tool is read-only.
 
 ## Install as a Claude plugin
@@ -67,7 +71,7 @@ DealFlowPro is built to slot into AI eval pipelines and production AI stacks. Th
 
 Rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) returned on every response. 429 responses include `Retry-After`.
 
-**Error codes.** Stable, documented at [dealflowpro.io/api/docs/#errors](https://dealflowpro.io/api/docs/) — all errors are JSON `{success: false, error: {code, message}}` shape. Codes: `invalid_input` (400), `invalid_json` (400), `unauthorized` (401), `tier_required` (403), `method_not_allowed` (405), `payload_too_large` (413), `rate_limit_exceeded` (429), `internal_error` (500).
+**Error codes.** Stable, documented at [dealflowpro.io/api/docs/#errors](https://dealflowpro.io/api/docs/) — all errors are JSON `{success: false, error: {code, message}}` shape. Codes: `invalid_input` (400), `invalid_json` (400), `unauthorized` (401), `tier_required` (403), `method_not_allowed` (405), `payload_too_large` (413), `missing_inputs` (422), `rate_limit_exceeded` (429), `internal_error` (500).
 
 **Tool schemas.** Each MCP tool has a schema-strict input definition. Call `tools/list` against the remote endpoint to get the canonical schemas at runtime; the REST OpenAPI spec covers the same shapes for the four compute tools (`analyze_deal`, `score_deal`, `reverse_calc`, `market_data`). The four saved-pipeline tools on the remote server (`list_my_deals`, `get_deal_analysis`, `get_my_criteria`, `portfolio_summary`) are MCP-only and need an Essentials plan or higher.
 

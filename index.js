@@ -20,7 +20,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const MCP_VERSION = "1.4.0";
+const MCP_VERSION = "1.6.0";
 const USER_AGENT = `dealflowpro-mcp/${MCP_VERSION}`;
 
 const API_KEY = process.env.DFP_API_KEY;
@@ -46,11 +46,34 @@ async function callApi(endpoint, body) {
   const data = await response.json();
 
   if (!response.ok || !data.success) {
+    if (data.error && data.error.code === "missing_inputs") {
+      throw new Error(formatMissingInputs(data.error, response.status));
+    }
     const errorMsg = data.error?.message || data.error || "API call failed";
     throw new Error(`DFP API error (${response.status}): ${errorMsg}`);
   }
 
   return data;
+}
+
+/** The API returns 422 missing_inputs when the account has no saved value for an assumption the analysis needs. Nothing is substituted. */
+function formatMissingInputs(err, status) {
+  const list = Array.isArray(err["missing-inputs"]) ? err["missing-inputs"] : [];
+  let msg = `DFP API error (${status}): ${err.message || "Missing inputs"}\n\n`;
+  msg += `The analysis was not run because these inputs have no value (nothing is assumed or substituted). Set them in your DealFlowPro account settings, or pass them on the call:\n`;
+  if (list.length === 0) {
+    msg += `- (the API did not list the keys)\n`;
+  }
+  for (const item of list) {
+    if (item && typeof item === "object") {
+      const reason = item.reason ? `: ${item.reason}` : "";
+      const withholds = Array.isArray(item.withholds) ? item.withholds.join(", ") : item.withholds;
+      msg += `- ${item.key}${reason}${withholds ? ` (withholds: ${withholds})` : ""}\n`;
+    } else {
+      msg += `- ${item}\n`;
+    }
+  }
+  return msg;
 }
 
 function formatCurrency(n) {
@@ -63,52 +86,52 @@ function formatPercent(n) {
   return n.toFixed(2) + "%";
 }
 
-/** One line saying which monthly CapEx the numbers used and where it came from (API assumptions_used). */
+/** One line saying which monthly CapEx the numbers used and where it came from (API assumptions-used). */
 function capexLine(u) {
-  if (!u || !("capex_basis" in u)) return "";
-  if (u.monthly_capex === null || u.monthly_capex === undefined) return `**CapEx:** not included. ${u.capex_note || ""}\n\n`;
-  const basis = u.capex_basis === "account_per_unit_yearly"
-    ? `your CapEx setting of ${formatCurrency(u["capex-per-unit-yearly"])}/unit/yr x ${u.capex_units} units / 12`
-    : "the monthly_capex you gave";
-  return `**CapEx:** ${formatCurrency(u.monthly_capex)}/mo (${basis})\n\n`;
+  if (!u || !("capex-basis" in u)) return "";
+  if (u["monthly-capex"] === null || u["monthly-capex"] === undefined) return `**CapEx:** not included. ${u["capex-note"] || ""}\n\n`;
+  const basis = u["capex-basis"] === "account_per_unit_yearly"
+    ? `your CapEx setting of ${formatCurrency(u["capex-per-unit-yearly"])}/unit/yr x ${u["capex-units"]} units / 12`
+    : "the monthly-capex you gave";
+  return `**CapEx:** ${formatCurrency(u["monthly-capex"])}/mo (${basis})\n\n`;
 }
 
 function formatAnalysisResult(data) {
   const d = data.data;
   const m = d.metrics || {};
   const f = d.financials || {};
-  const s = d.dfp_score || {};
-  const mo = d.max_offer || {};
+  const s = d["dfp-score"] || {};
+  const mo = d["max-offer"] || {};
 
   let result = `## Deal Analysis Results\n\n`;
   result += `**DFP Score: ${s.score ?? "N/A"}/100 (${s.band?.label ?? "N/A"})**\n\n`;
 
   result += `### Key Metrics\n`;
   result += `| Metric | Value |\n|--------|-------|\n`;
-  result += `| Cap Rate | ${formatPercent(m.going_in_cap_rate)} |\n`;
-  result += `| DSCR | ${m.going_in_dscr ?? "N/A"} |\n`;
-  result += `| Cash-on-Cash | ${formatPercent(m.cash_on_cash)} |\n`;
-  result += `| Avg Cash-on-Cash | ${formatPercent(m.avg_cash_on_cash)} |\n`;
+  result += `| Cap Rate | ${formatPercent(m["going-in-cap-rate"])} |\n`;
+  result += `| DSCR | ${m["going-in-dscr"] ?? "N/A"} |\n`;
+  result += `| Cash-on-Cash | ${formatPercent(m["cash-on-cash"])} |\n`;
+  result += `| Avg Cash-on-Cash | ${formatPercent(m["avg-cash-on-cash"])} |\n`;
   result += `| IRR | ${formatPercent(m.irr)} |\n`;
-  result += `| Equity Multiple | ${m.equity_multiple ?? "N/A"}x |\n`;
-  result += `| OER | ${formatPercent(m.operating_expense_ratio)} |\n\n`;
+  result += `| Equity Multiple | ${m["equity-multiple"] ?? "N/A"}x |\n`;
+  result += `| OER | ${formatPercent(m["operating-expense-ratio"])} |\n\n`;
 
   result += `### Financials\n`;
   result += `| Item | Value |\n|------|-------|\n`;
-  result += `| NOI | ${formatCurrency(f.net_operating_income)} |\n`;
-  result += `| Annual Debt Service | ${formatCurrency(f.annual_debt_service)} |\n`;
-  result += `| Annual Cash Flow | ${formatCurrency(f.annual_cash_flow)} |\n`;
-  result += `| Total Cash Required | ${formatCurrency(f.total_cash_invested)} |\n`;
-  result += `| Loan Amount | ${formatCurrency(f.loan_amount)} |\n\n`;
-  result += capexLine(d.assumptions_used);
+  result += `| NOI | ${formatCurrency(f["net-operating-income"])} |\n`;
+  result += `| Annual Debt Service | ${formatCurrency(f["annual-debt-service"])} |\n`;
+  result += `| Annual Cash Flow | ${formatCurrency(f["annual-cash-flow"])} |\n`;
+  result += `| Total Cash Required | ${formatCurrency(f["total-cash-invested"])} |\n`;
+  result += `| Loan Amount | ${formatCurrency(f["loan-amount"])} |\n\n`;
+  result += capexLine(d["assumptions-used"]);
 
-  if (mo.binding_price) {
+  if (mo["binding-price"]) {
     result += `### Max Offer Price\n`;
-    result += `**${formatCurrency(mo.binding_price)}** (binding constraint: ${mo.binding_key})\n\n`;
+    result += `**${formatCurrency(mo["binding-price"])}** (binding constraint: ${mo["binding-key"]})\n\n`;
     if (mo.metrics) {
       result += `| Constraint | Max Price |\n|------------|----------|\n`;
       for (const [key, val] of Object.entries(mo.metrics)) {
-        result += `| ${val.label} (${val.threshold}) | ${formatCurrency(val.maxPrice)} |\n`;
+        result += `| ${val.label} (${val.threshold}) | ${formatCurrency((val["max-price"] ?? val.maxPrice))} |\n`;
       }
       result += `\n`;
     }
@@ -120,7 +143,7 @@ function formatAnalysisResult(data) {
 // Create MCP server
 const server = new McpServer({
   name: "DealFlowPro",
-  version: "1.5.0",
+  version: "1.6.0",
 });
 
 // Tool: analyze_deal
@@ -139,44 +162,45 @@ server.registerTool(
       openWorldHint: false,
     },
     inputSchema: {
-    purchase_price: z.number().describe("Asking/purchase price in dollars"),
+    "purchase-price": z.number().describe("Asking/purchase price in dollars"),
     units: z.number().int().positive().describe("Number of apartment units (required). Turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve."),
-    monthly_capex: z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
-    monthly_income: z.number().describe("Total monthly rental income in dollars"),
-    monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars (if omitted, 50% of income is assumed)"),
-    property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
-    year_built: z.number().optional().describe("Year the property was built"),
-    income_source: z.string().optional().describe("Where monthly_income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
-    expense_source: z.string().optional().describe("Where monthly_expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
-    scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current: in-place numbers with DFP's default 7% vacancy. proforma applies forward-looking defaults (5% vacancy) and returns more favorable figures for the same deal. Pass it explicitly when comparing results."),
+    "monthly-capex": z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
+    "monthly-income": z.number().describe("Total monthly rental income in dollars"),
+    "monthly-expenses": z.number().optional().describe("Total monthly operating expenses in dollars. Omitted: NO expenses are assumed, so NOI and every ratio built on it (cap rate, cash-on-cash, DSCR, IRR, DFP Score) are withheld, with the reason; nothing is estimated. A typed 0 is a value (zero expenses), not omission."),
+    "property-address": z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
+    "year-built": z.number().optional().describe("Year the property was built"),
+    "income-source": z.string().optional().describe("Where monthly-income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
+    "expense-source": z.string().optional().describe("Where monthly-expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
+    scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current. The two scenarios use your account's saved current and proforma assumptions (proforma is generally more favorable for the same deal). An assumption your account has not set makes the call fail naming it; nothing is substituted. Pass it explicitly when comparing results."),
     assumptions: z.object({
-      "down-payment": z.number().optional().describe("Down payment percentage (default 25)"),
-      "interest-rate": z.number().optional().describe("Loan interest rate percentage (default 6.5)"),
-      "vacancy-rate": z.number().optional().describe("Vacancy rate percentage (default 7)"),
-      "holding-period": z.number().optional().describe("Hold period in years (default 5)"),
-      "exit-cap-rate": z.number().optional().describe("Exit cap rate percentage (default 6.5)"),
+      "down-payment": z.number().optional().describe("Down payment percentage. Omitted: your account's saved assumption"),
+      "interest-rate": z.number().optional().describe("Loan interest rate percentage. Omitted: your account's saved assumption"),
+      "vacancy-rate": z.number().optional().describe("Vacancy rate percentage. Omitted: your account's saved assumption"),
+      "holding-period": z.number().optional().describe("Hold period in years. Omitted: your account's saved assumption"),
+      "exit-cap-rate": z.number().optional().describe("Exit cap rate percentage. Omitted: your account's saved assumption"),
       "interest-basis": z.enum(["365-360", "30-360"]).optional().describe("First mortgage interest basis. 365-360: interest accrues at rate x 365/360 (commercial / agency convention); 30-360: every month counts as 30 days. Omitted: the account's Settings default"),
       "second-mortgage-interest-basis": z.enum(["365-360", "30-360"]).optional().describe("Second mortgage interest basis, same values"),
-    }).optional().describe("Override default underwriting assumptions"),
+    }).optional().describe("Override your account's saved underwriting assumptions. Omitted keys use the saved assumption; one the account has not set makes the call fail naming it, nothing is substituted."),
     },
   },
   async (params) => {
     const body = {
       deal: {
-        purchase_price: params.purchase_price,
+        "purchase-price": params["purchase-price"],
         units: params.units,
-        monthly_income: params.monthly_income,
-        monthly_expenses: params.monthly_expenses || 0,
-        property_address: params.property_address || "",
-        year_built: params.year_built,
+        "monthly-income": params["monthly-income"],
+        "property-address": params["property-address"] || "",
+        "year-built": params["year-built"],
       },
       assumptions: params.assumptions || null,
       scenario: params.scenario || "current",
     };
-    if (params.income_source) body.deal.income_source = params.income_source;
-    if (params.expense_source) body.deal.expense_source = params.expense_source;
+    // Never turn an omitted expense figure into 0: the API withholds NOI when it is absent.
+    if (typeof params["monthly-expenses"] === "number") body.deal["monthly-expenses"] = params["monthly-expenses"];
+    if (params["income-source"]) body.deal["income-source"] = params["income-source"];
+    if (params["expense-source"]) body.deal["expense-source"] = params["expense-source"];
 
-    if (params.monthly_capex !== undefined) body.deal.monthly_capex = params.monthly_capex;
+    if (params["monthly-capex"] !== undefined) body.deal["monthly-capex"] = params["monthly-capex"];
     const result = await callApi("analyze", body);
     return { content: [{ type: "text", text: formatAnalysisResult(result) }] };
   }
@@ -196,14 +220,14 @@ server.registerTool(
       openWorldHint: false,
     },
     inputSchema: {
-      purchase_price: z.number().describe("Asking/purchase price in dollars"),
+      "purchase-price": z.number().describe("Asking/purchase price in dollars"),
       units: z.number().int().positive().describe("Number of apartment units (required). Turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve."),
-    monthly_capex: z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
-      monthly_income: z.number().describe("Total monthly rental income in dollars"),
-      monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
-      property_address: z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
-      income_source: z.string().optional().describe("Where monthly_income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
-      expense_source: z.string().optional().describe("Where monthly_expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
+    "monthly-capex": z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
+      "monthly-income": z.number().describe("Total monthly rental income in dollars"),
+      "monthly-expenses": z.number().optional().describe("Total monthly operating expenses in dollars. Omitted: NO expenses are assumed, so NOI and the ratios built on it are withheld, with the reason; nothing is estimated. A typed 0 is a value (zero expenses)."),
+      "property-address": z.string().optional().describe("Full street address. Drives the market data behind the DFP Score; without it the market component is understated."),
+      "income-source": z.string().optional().describe("Where monthly-income came from, e.g. RentRoll, T12, OM, Screen. Raises the confidence rating on the result."),
+      "expense-source": z.string().optional().describe("Where monthly-expenses came from, e.g. T12, OperatingStatement, OM, Screen. Raises the confidence rating on the result."),
       assumptions: z.object({
       "interest-basis": z.enum(["365-360", "30-360"]).optional().describe("First mortgage interest basis. 365-360: interest accrues at rate x 365/360 (commercial / agency convention); 30-360: every month counts as 30 days. Omitted: the account's Settings default"),
       "second-mortgage-interest-basis": z.enum(["365-360", "30-360"]).optional().describe("Second mortgage interest basis, same values"),
@@ -213,31 +237,31 @@ server.registerTool(
   async (params) => {
     const body = {
       deal: {
-        purchase_price: params.purchase_price,
+        "purchase-price": params["purchase-price"],
         units: params.units,
-        monthly_income: params.monthly_income,
-        monthly_expenses: params.monthly_expenses || 0,
-        property_address: params.property_address || "",
+        "monthly-income": params["monthly-income"],
+        "property-address": params["property-address"] || "",
       },
     };
+    if (typeof params["monthly-expenses"] === "number") body.deal["monthly-expenses"] = params["monthly-expenses"];
     if (params.assumptions) body.assumptions = params.assumptions;
-    if (params.income_source) body.deal.income_source = params.income_source;
-    if (params.expense_source) body.deal.expense_source = params.expense_source;
+    if (params["income-source"]) body.deal["income-source"] = params["income-source"];
+    if (params["expense-source"]) body.deal["expense-source"] = params["expense-source"];
 
-    if (params.monthly_capex !== undefined) body.deal.monthly_capex = params.monthly_capex;
+    if (params["monthly-capex"] !== undefined) body.deal["monthly-capex"] = params["monthly-capex"];
     const result = await callApi("score", body);
     const d = result.data;
-    const s = d.dfp_score || {};
-    const km = d.key_metrics || {};
+    const s = d["dfp-score"] || {};
+    const km = d["key-metrics"] || {};
 
     let text = `## DFP Score: ${s.score ?? "N/A"}/100 (${s.band?.label ?? "N/A"})\n\n`;
     text += `| Metric | Value |\n|--------|-------|\n`;
-    text += `| Cap Rate | ${formatPercent(km.cap_rate)} |\n`;
+    text += `| Cap Rate | ${formatPercent(km["cap-rate"])} |\n`;
     text += `| DSCR | ${km.dscr ?? "N/A"} |\n`;
-    text += `| Cash-on-Cash | ${formatPercent(km.cash_on_cash)} |\n`;
+    text += `| Cash-on-Cash | ${formatPercent(km["cash-on-cash"])} |\n`;
     text += `| NOI | ${formatCurrency(km.noi)} |\n`;
 
-    text += `\n` + capexLine(d.assumptions_used);
+    text += `\n` + capexLine(d["assumptions-used"]);
     return { content: [{ type: "text", text }] };
   }
 );
@@ -256,34 +280,33 @@ server.registerTool(
       openWorldHint: false,
     },
     inputSchema: {
-    monthly_income: z.number().describe("Total monthly rental income in dollars"),
-    monthly_expenses: z.number().optional().describe("Total monthly operating expenses in dollars"),
+    "monthly-income": z.number().describe("Total monthly rental income in dollars"),
+    "monthly-expenses": z.number().optional().describe("Total monthly operating expenses in dollars. Omitted: NO expenses are assumed, so NOI and the ratios built on it are withheld, with the reason; nothing is estimated. A typed 0 is a value (zero expenses)."),
     units: z.number().int().positive().describe("Number of apartment units (required). Turns your account's CapEx ($/unit/yr) setting into the monthly CapEx reserve."),
-    monthly_capex: z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
-    scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current: in-place numbers with DFP's default 7% vacancy. proforma applies forward-looking defaults (5% vacancy) and returns more favorable figures for the same deal. Pass it explicitly when comparing results."),
+    "monthly-capex": z.number().optional().describe("Monthly CapEx reserve in dollars for this deal, used as-is. Omitted: your account's CapEx ($/unit/yr) setting x units / 12."),
+    scenario: z.enum(["current", "proforma"]).optional().describe("Defaults to current. The two scenarios use your account's saved current and proforma assumptions (proforma is generally more favorable for the same deal). An assumption your account has not set makes the call fail naming it; nothing is substituted. Pass it explicitly when comparing results."),
     targets: z.object({
-      cap_rate: z.number().optional().describe("Target cap rate (e.g., 7 for 7%)"),
-      cash_on_cash: z.number().optional().describe("Target cash-on-cash return (e.g., 8 for 8%)"),
+      "cap-rate": z.number().optional().describe("Target cap rate (e.g., 7 for 7%)"),
+      "cash-on-cash": z.number().optional().describe("Target cash-on-cash return (e.g., 8 for 8%)"),
       dscr: z.number().optional().describe("Target DSCR (e.g., 1.25)"),
       irr: z.number().optional().describe("Target IRR (e.g., 15 for 15%)"),
-      price_per_unit: z.number().optional().describe("Maximum price per unit in dollars (e.g., 120000)."),
+      "price-per-unit": z.number().optional().describe("Maximum price per unit in dollars (e.g., 120000)."),
     }).describe("Target return metrics — provide at least one"),
     assumptions: z.object({
-      "down-payment": z.number().optional(),
-      "interest-rate": z.number().optional(),
-      "vacancy-rate": z.number().optional(),
-      "holding-period": z.number().optional(),
-      "exit-cap-rate": z.number().optional(),
+      "down-payment": z.number().optional().describe("Omitted: your account's saved assumption"),
+      "interest-rate": z.number().optional().describe("Omitted: your account's saved assumption"),
+      "vacancy-rate": z.number().optional().describe("Omitted: your account's saved assumption"),
+      "holding-period": z.number().optional().describe("Omitted: your account's saved assumption"),
+      "exit-cap-rate": z.number().optional().describe("Omitted: your account's saved assumption"),
       "interest-basis": z.enum(["365-360", "30-360"]).optional().describe("First mortgage interest basis. 365-360: interest accrues at rate x 365/360 (commercial / agency convention); 30-360: every month counts as 30 days. Omitted: the account's Settings default"),
       "second-mortgage-interest-basis": z.enum(["365-360", "30-360"]).optional().describe("Second mortgage interest basis, same values"),
-    }).optional().describe("Override default underwriting assumptions"),
+    }).optional().describe("Override your account's saved underwriting assumptions. Omitted keys use the saved assumption; one the account has not set makes the call fail naming it, nothing is substituted."),
     },
   },
   async (params) => {
     const body = {
       deal: {
-        monthly_income: params.monthly_income,
-        monthly_expenses: params.monthly_expenses || 0,
+        "monthly-income": params["monthly-income"],
         units: params.units,
       },
       targets: params.targets,
@@ -291,19 +314,20 @@ server.registerTool(
       scenario: params.scenario || "current",
     };
 
-    if (params.monthly_capex !== undefined) body.deal.monthly_capex = params.monthly_capex;
+    if (typeof params["monthly-expenses"] === "number") body.deal["monthly-expenses"] = params["monthly-expenses"];
+    if (params["monthly-capex"] !== undefined) body.deal["monthly-capex"] = params["monthly-capex"];
     const result = await callApi("reverse-calc", body);
     const d = result.data;
 
-    let text = `## Max Offer Price: ${formatCurrency(d.max_offer_price)}\n\n`;
-    text += capexLine(d.assumptions_used);
-    text += `**Binding constraint: ${d.binding_constraint}**\n`;
-    if (d.price_per_unit) text += `Price per unit: ${formatCurrency(d.price_per_unit)}\n`;
+    let text = `## Max Offer Price: ${formatCurrency(d["max-offer-price"])}\n\n`;
+    text += capexLine(d["assumptions-used"]);
+    text += `**Binding constraint: ${d["binding-constraint"]}**\n`;
+    if (d["price-per-unit"]) text += `Price per unit: ${formatCurrency(d["price-per-unit"])}\n`;
     text += `\n`;
 
     text += `| Target Metric | Max Price |\n|---------------|----------|\n`;
-    for (const [key, val] of Object.entries(d.max_prices || {})) {
-      text += `| ${key.replace("by_", "")} | ${val ? formatCurrency(val) : "Unsolvable"} |\n`;
+    for (const [key, val] of Object.entries(d["max-prices"] || {})) {
+      text += `| ${key.replace(/^by[-_]/, "")} | ${val ? formatCurrency(val) : "Unsolvable"} |\n`;
     }
 
     return { content: [{ type: "text", text }] };
@@ -336,15 +360,18 @@ server.registerTool(
 
     let text = `## Market Data: ${d.address}\n\n`;
     text += `| Factor | Value |\n|--------|-------|\n`;
-    text += `| Flood Zone | ${d.flood_zone.zone_code || "Unknown"} (${d.flood_zone.in_flood_zone === true ? "In flood zone" : d.flood_zone.in_flood_zone === false ? "Not in flood zone" : "Unknown"}) |\n`;
-    // near_boundary is only true when a hazard zone (A/V) and a non-hazard zone are both nearby, so
+    const fz = d["flood-zone"] || {};
+    const ni = d["neighborhood-income"] || {};
+    const jg = d["job-growth"] || {};
+    text += `| Flood Zone | ${fz["zone-code"] || "Unknown"} (${fz["in-flood-zone"] === true ? "In flood zone" : fz["in-flood-zone"] === false ? "Not in flood zone" : "Unknown"}) |\n`;
+    // near-boundary is only true when a hazard zone (A/V) and a non-hazard zone are both nearby, so
     // false/null does not mean "far from an edge". null means "not determined", never false.
-    if (d.flood_zone.near_boundary === true) {
-      const zones = Array.isArray(d.flood_zone.nearby_zones) && d.flood_zone.nearby_zones.length ? ` (nearby zones: ${d.flood_zone.nearby_zones.join(", ")})` : "";
+    if (fz["near-boundary"] === true) {
+      const zones = Array.isArray(fz["nearby-zones"]) && fz["nearby-zones"].length ? ` (nearby zones: ${fz["nearby-zones"].join(", ")})` : "";
       text += `| Flood Boundary | Near a flood-zone boundary${zones}: verify with an elevation certificate before relying on the zone above |\n`;
     }
-    text += `| Neighborhood Income vs State Median | ${d.neighborhood_income.vs_state_median != null ? d.neighborhood_income.vs_state_median + "%" : "Unknown"} |\n`;
-    text += `| Job Growth Rate | ${d.job_growth.rate != null ? d.job_growth.rate + "%" : "Unknown"} |\n`;
+    text += `| Neighborhood Income vs State Median | ${ni["vs-state-median"] != null ? ni["vs-state-median"] + "%" : "Unknown"} |\n`;
+    text += `| Job Growth Rate | ${jg.rate != null ? jg.rate + "%" : "Unknown"} |\n`;
 
     return { content: [{ type: "text", text }] };
   }
