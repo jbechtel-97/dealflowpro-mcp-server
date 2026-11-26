@@ -15,11 +15,13 @@ jobs:
       id-token: write  # required for both npm provenance and MCP Registry OIDC
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      - run: npm install
+      - run: npm ci
       - run: npm test
 
       # npm Trusted Publishing (OIDC): no NPM_TOKEN secret, so nothing to rotate or expire.
@@ -29,7 +31,7 @@ jobs:
       # ships 10.x) and a trusted publisher configured on npmjs.com for
       # jbechtel-97/dealflowpro-mcp-server + workflow file publish.yml.
       - name: Update npm for trusted publishing
-        run: npm install -g npm@^11.5.1 && npm -v
+        run: npm install -g npm@11.5.1 && npm -v
       # Idempotent: a retry after a partial failure must not try to publish the same version
       # twice (npm refuses, and the whole run would fail before the MCP Registry step).
       - name: Publish to npm (skipped if this version is already there)
@@ -59,10 +61,17 @@ jobs:
       # manual `mcp-publisher publish` left — 1.0.1 through the 1.1.x/1.2.x series.
       # GitHub OIDC auth: zero secrets, server.json's `name: io.github.<owner>/...`
       # binds the publish identity to this repo automatically.
+      # One exact release, checked before it is unpacked: this job can mint publish tokens. To move up, change both lines
+      # from the release's registry_<version>_checksums.txt.
       - name: Install mcp-publisher
+        env:
+          MCP_PUBLISHER_VERSION: v1.8.16
+          MCP_PUBLISHER_SHA256: 6e2f799550cf843c6fd3350498d56cc49be3dc0af1e6237eb0e6435c7a9d5c05
         run: |
-          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" \
-            | tar -xz -C /usr/local/bin mcp-publisher
+          curl -fsSL -o /tmp/mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/$MCP_PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz"
+          echo "$MCP_PUBLISHER_SHA256  /tmp/mcp-publisher.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/mcp-publisher.tar.gz -C /usr/local/bin mcp-publisher
           chmod +x /usr/local/bin/mcp-publisher
 
       - name: Publish to MCP Registry
